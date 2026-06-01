@@ -16,8 +16,6 @@ app.config.from_object(Config)
 
 # Initialize Database
 db.init_app(app)
-with app.app_context():
-    setup_db()
 
 # Helper function to clean JSON string from Gemini
 def clean_json_string(text):
@@ -421,6 +419,10 @@ def patient_qr(patient_id):
     img_io.seek(0)
     
     return send_file(img_io, mimetype='image/png')
+
+# Run DB setup within app context
+with app.app_context():
+    setup_db()
 
 # Startup
 if __name__ == '__main__':
