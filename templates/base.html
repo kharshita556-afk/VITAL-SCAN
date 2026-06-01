@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalScan | Patient Health Analyzer</title>
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js & html2canvas for clinical report printing/downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay d-none">
+        <div class="spinner-box">
+            <div class="spinner-border text-teal" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 fw-semibold text-teal-dark">AI Health Prediction in progress...</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-heart-pulse logo-icon"></i>
+                    <div>
+                        <h1 class="brand-name">VitalScan</h1>
+                        <p class="brand-tagline">Patient Health Analyzer</p>
+                    </div>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-tab="dashboard">
+                        <i class="fa-solid fa-chart-line nav-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tab="patients">
+                        <i class="fa-solid fa-user-injured nav-icon"></i>
+                        <span>All Patients</span>
+                    </a>
+                </li>
+                <li class="nav-item mt-4 px-3">
+                    <button class="btn btn-add-patient w-100 py-2.5 rounded-3 fw-medium shadow-sm" data-bs-toggle="modal" data-bs-target="#addPatientModal">
+                        <i class="fa-solid fa-plus-circle me-2"></i>Add Patient
+                    </button>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="medical-badge">
+                    <i class="fa-solid fa-shield-halved text-teal-dark me-2"></i>
+                    <span>Secure Clinician Portal</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            
+            <!-- Top Navbar -->
+            <header class="top-navbar d-flex align-items-center justify-content-between px-4 py-3 border-bottom">
+                <div class="page-title-section">
+                    <h2 id="currentTabTitle" class="fw-semibold text-teal-dark mb-0">Clinical Dashboard</h2>
+                    <p class="text-muted small mb-0" id="currentTabSubtitle">Monitor patient health anomalies & predictive diagnostics</p>
+                </div>
+                <div class="navbar-actions d-flex align-items-center gap-3">
+                    <!-- Live Server Time -->
+                    <div class="server-time d-none d-md-flex align-items-center text-muted small">
+                        <i class="fa-regular fa-clock me-2"></i>
+                        <span id="liveClock">18:50:20</span>
+                    </div>
+                    <!-- Theme Toggle -->
+                    <button id="themeToggleBtn" class="theme-toggle-btn btn border rounded-circle shadow-sm" aria-label="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <!-- User Account -->
+                    <div class="user-profile d-flex align-items-center gap-2">
+                        <div class="avatar bg-teal-soft text-teal-dark fw-bold rounded-circle">DR</div>
+                        <div class="d-none d-sm-block text-start">
+                            <h6 class="mb-0 text-sm font-semibold">Dr. Ravi, MD</h6>
+                            <span class="text-xs text-muted">Chief Cardiologist</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Panel Container with animations -->
+            <div class="content-panel-wrapper p-4">
+                
+                <!-- Tab Panel 1: Dashboard -->
+                <section id="dashboardPanel" class="tab-panel active-panel fade-in-slide">
+                    <!-- Metric Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dashboard-card stat-card border-0 shadow-sm p-4 rounded-4 position-relative overflow-hidden">
+                                <div class="card-icon-box bg-teal-soft text-teal">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-muted text-uppercase small fw-semibold tracking-wider">Total Patients</span>
+                                    <h3 class="fw-bold mb-0 text-teal-dark mt-1" id="statTotalPatients">0</h3>
+                                </div>
+                                <div class="bg-card-decoration"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dashboard-card stat-card border-0 shadow-sm p-4 rounded-4 position-relative overflow-hidden">
+                                <div class="card-icon-box bg-red-soft text-danger">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-muted text-uppercase small fw-semibold tracking-wider">High Risk Patients</span>
+                                    <h3 class="fw-bold mb-0 text-danger mt-1" id="statHighRiskPatients">0</h3>
+                                </div>
+                                <div class="bg-card-decoration bg-red-dec"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dashboard-card stat-card border-0 shadow-sm p-4 rounded-4 position-relative overflow-hidden">
+                                <div class="card-icon-box bg-green-soft text-success">
+                                    <i class="fa-solid fa-heart-circle-check"></i>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-muted text-uppercase small fw-semibold tracking-wider">Normal Status</span>
+                                    <h3 class="fw-bold mb-0 text-success mt-1" id="statNormalPatients">0</h3>
+                                </div>
+                                <div class="bg-card-decoration bg-green-dec"></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dashboard-card stat-card border-0 shadow-sm p-4 rounded-4 position-relative overflow-hidden">
+                                <div class="card-icon-box bg-blue-soft text-primary">
+                                    <i class="fa-solid fa-calendar-day"></i>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-muted text-uppercase small fw-semibold tracking-wider">Today's Entries</span>
+                                    <h3 class="fw-bold mb-0 text-primary mt-1" id="statTodayEntries">0</h3>
+                                </div>
+                                <div class="bg-card-decoration bg-blue-dec"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart & Global Epidemic Monitors -->
+                    <div class="row g-4 mb-4">
+                        <!-- Chart Card -->
+                        <div class="col-12 col-xl-5">
+                            <div class="dashboard-card border-0 shadow-sm p-4 rounded-4 h-100">
+                                <h5 class="fw-semibold text-teal-dark mb-4">
+                                    <i class="fa-solid fa-chart-pie me-2 text-teal"></i>Risk Category Distribution
+                                </h5>
+                                <div class="chart-container d-flex align-items-center justify-content-center" style="position: relative; height:260px;">
+                                    <canvas id="riskDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- disease.sh Stats Card -->
+                        <div class="col-12 col-xl-7">
+                            <div class="dashboard-card border-0 shadow-sm p-4 rounded-4 h-100">
+                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                    <h5 class="fw-semibold text-teal-dark mb-0">
+                                        <i class="fa-solid fa-earth-americas me-2 text-teal"></i>Global Health statistics
+                                    </h5>
+                                    <span class="badge bg-teal-soft text-teal-dark border-0 small px-2.5 py-1">disease.sh API</span>
+                                </div>
+                                <div class="row g-3" id="globalStatsGrid">
+                                    <div class="col-6">
+                                        <div class="p-3 border rounded-3 bg-card-stats text-start h-100">
+                                            <span class="text-muted small text-uppercase fw-medium d-block">Global Active Cases</span>
+                                            <h4 class="fw-bold text-teal-dark mt-2 mb-1" id="globalActiveCases">Loading...</h4>
+                                            <p class="text-xs text-muted mb-0">Total active viral vectors</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-3 border rounded-3 bg-card-stats text-start h-100">
+                                            <span class="text-muted small text-uppercase fw-medium d-block">Global Recoveries</span>
+                                            <h4 class="fw-bold text-success mt-2 mb-1" id="globalRecovered">Loading...</h4>
+                                            <p class="text-xs text-success mb-0">Total healthy restorations</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-3 border rounded-3 bg-card-stats text-start h-100">
+                                            <span class="text-muted small text-uppercase fw-medium d-block">Global Total Cases</span>
+                                            <h4 class="fw-bold text-primary mt-2 mb-1" id="globalTotalCases">Loading...</h4>
+                                            <p class="text-xs text-primary mb-0">Cumulative clinical logs</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-3 border rounded-3 bg-card-stats text-start h-100">
+                                            <span class="text-muted small text-uppercase fw-medium d-block">Global Deaths</span>
+                                            <h4 class="fw-bold text-danger mt-2 mb-1" id="globalDeaths">Loading...</h4>
+                                            <p class="text-xs text-danger mb-0">Cumulative lethalities</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Patients Mini Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="dashboard-card border-0 shadow-sm p-4 rounded-4">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <h5 class="fw-semibold text-teal-dark mb-0">
+                                        <i class="fa-solid fa-list-check me-2 text-teal"></i>Recent Diagnostic Logs
+                                    </h5>
+                                    <button class="btn btn-outline-teal btn-sm" id="btnGoToAllPatients">View All Records</button>
+                                </div>
+                                <div class="table-responsive rounded-3 border">
+                                    <table class="table table-hover align-middle mb-0 text-start">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="py-3">Patient Name</th>
+                                                <th class="py-3">Age</th>
+                                                <th class="py-3 text-center">Glucose</th>
+                                                <th class="py-3 text-center">Haemoglobin</th>
+                                                <th class="py-3 text-center">Cholesterol</th>
+                                                <th class="py-3 text-center">Risk Badge</th>
+                                                <th class="py-3 text-end pe-4">Created At</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentPatientsTableBody">
+                                            <!-- Dynamically generated through js -->
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4 text-muted">No clinical logs compiled yet.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab Panel 2: All Patients -->
+                <section id="patientsPanel" class="tab-panel fade-in-slide">
+                    <div class="dashboard-card border-0 shadow-sm p-4 rounded-4">
+                        
+                        <!-- Search and Export Toolbar -->
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+                            <div class="search-input-box position-relative flex-grow-1 max-w-lg">
+                                <i class="fa-solid fa-search search-icon text-muted"></i>
+                                <input type="text" id="patientSearchInput" class="form-control ps-5 py-2.5 rounded-3 shadow-xs" placeholder="Search by name, email, or remarks...">
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button id="btnExportCSV" class="btn btn-teal-secondary d-flex align-items-center gap-2 py-2.5 px-4 rounded-3 shadow-sm">
+                                    <i class="fa-solid fa-file-csv fs-5"></i>Export to CSV
+                                </button>
+                                <button class="btn btn-teal d-flex align-items-center gap-2 py-2.5 px-4 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addPatientModal">
+                                    <i class="fa-solid fa-user-plus"></i>Add Patient
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Main Clinical Records Table -->
+                        <div class="table-responsive rounded-4 border">
+                            <table class="table table-hover align-middle mb-0 text-start" id="patientsMainTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="py-3 ps-4">Patient Name</th>
+                                        <th class="py-3">Email Address</th>
+                                        <th class="py-3">DOB (Age)</th>
+                                        <th class="py-3 text-center">Glucose</th>
+                                        <th class="py-3 text-center">Haemoglobin</th>
+                                        <th class="py-3 text-center">Cholesterol</th>
+                                        <th class="py-3 text-center">Risk Badge</th>
+                                        <th class="py-3">Recorded On</th>
+                                        <th class="py-3 text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientsTableBody">
+                                    <!-- Dynamic rows loaded via AJAX -->
+                                    <tr>
+                                        <td colspan="9" class="text-center py-5">
+                                            <div class="spinner-border text-teal" role="status">
+                                                <span class="visually-hidden">Loading patients...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================================= MODALS ================================= -->
+
+    <!-- Add Patient Modal -->
+    <div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 bg-teal text-white p-4">
+                    <h5 class="modal-title fw-semibold" id="addPatientModalLabel">
+                        <i class="fa-solid fa-user-plus me-2"></i>Record New Patient Diagnostic
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addPatientForm" novalidate>
+                        <div class="row g-3">
+                            <!-- Personal Info -->
+                            <div class="col-12 col-md-6">
+                                <label for="addFullName" class="form-label fw-medium text-teal-dark">Full Name</label>
+                                <input type="text" class="form-control py-2.5 rounded-3" id="addFullName" required placeholder="e.g. Sarah Jenkins">
+                                <div class="invalid-feedback text-xs">Please provide the patient's full name.</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="addEmail" class="form-label fw-medium text-teal-dark">Email Address</label>
+                                <input type="email" class="form-control py-2.5 rounded-3" id="addEmail" required placeholder="name@hospital.org">
+                                <div class="invalid-feedback text-xs" id="addEmailError">Please provide a valid email format.</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="addDob" class="form-label fw-medium text-teal-dark">Date of Birth</label>
+                                <input type="date" class="form-control py-2.5 rounded-3" id="addDob" required>
+                                <div class="invalid-feedback text-xs" id="addDobError">Date of Birth cannot be a future date.</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-medium text-teal-dark invisible">Spacer</label>
+                                <div class="form-control-plaintext text-muted small py-2 d-flex align-items-center">
+                                    <i class="fa-solid fa-circle-info text-teal me-2"></i>
+                                    Age will be auto-calculated upon logging.
+                                </div>
+                            </div>
+
+                            <hr class="my-4 text-muted opacity-25">
+
+                            <!-- Blood Values -->
+                            <div class="col-12">
+                                <h6 class="fw-semibold text-teal-dark mb-2">Blood Test Values</h6>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="addGlucose" class="form-label fw-medium text-teal-dark">Glucose (mg/dL)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control py-2.5" id="addGlucose" required placeholder="70-300">
+                                    <span class="input-group-text bg-light text-muted small">mg/dL</span>
+                                </div>
+                                <div class="invalid-feedback text-xs">Enter a valid positive number for Glucose.</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="addHaemoglobin" class="form-label fw-medium text-teal-dark">Haemoglobin (g/dL)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control py-2.5" id="addHaemoglobin" required placeholder="5-25">
+                                    <span class="input-group-text bg-light text-muted small">g/dL</span>
+                                </div>
+                                <div class="invalid-feedback text-xs">Enter a valid positive number for Haemoglobin.</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="addCholesterol" class="form-label fw-medium text-teal-dark">Cholesterol (mg/dL)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control py-2.5" id="addCholesterol" required placeholder="100-400">
+                                    <span class="input-group-text bg-light text-muted small">mg/dL</span>
+                                </div>
+                                <div class="invalid-feedback text-xs">Enter a valid positive number for Cholesterol.</div>
+                            </div>
+
+                            <!-- Live Prediction Preview Section -->
+                            <div class="col-12 mt-4">
+                                <div class="card bg-teal-soft border-0 p-3.5 rounded-3 position-relative overflow-hidden shadow-xs">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h6 class="mb-0 fw-semibold text-teal-dark">
+                                            <i class="fa-solid fa-bolt-lightning text-amber me-1.5 animate-pulse"></i>Live Prediction Preview
+                                        </h6>
+                                        <span class="badge bg-teal text-white small px-2 py-0.5 rounded-pill" id="previewRiskBadge">Enter details</span>
+                                    </div>
+                                    <p class="text-sm mb-0 text-teal-dark" id="previewPredictionRemarks">
+                                        Complete the blood metrics to view real-time diagnostic estimations before saving.
+                                    </p>
+                                    <div id="previewLoader" class="d-none position-absolute top-0 start-0 w-100 h-100 bg-teal-soft d-flex align-items-center justify-content-center opacity-75">
+                                        <div class="spinner-border spinner-border-sm text-teal" role="status"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-0 p-0 mt-4 gap-2">
+                            <button type="button" class="btn btn-outline-teal py-2.5 px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-teal py-2.5 px-4 rounded-3">Save Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Patient Modal -->
+    <div class="modal fade" id="editPatientModal" tabindex="-1" aria-labelledby="editPatientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 bg-teal text-white p-4">
+                    <h5 class="modal-title fw-semibold" id="editPatientModalLabel">
+                        <i class="fa-solid fa-user-pen me-2"></i>Modify Diagnostic Record
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editPatientForm" novalidate>
+                        <input type="hidden" id="editPatientId">
+                        <div class="row g-3">
+                            <!-- Personal Info -->
+                            <div class="col-12 col-md-6">
+                                <label for="editFullName" class="form-label fw-medium text-teal-dark">Full Name</label>
+                                <input type="text" class="form-control py-2.5 rounded-3" id="editFullName" required>
+                                <div class="invalid-feedback text-xs">Please provide the patient's full name.</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="editEmail" class="form-label fw-medium text-teal-dark">Email Address</label>
+                                <input type="email" class="form-control py-2.5 rounded-3" id="editEmail" required>
+                                <div class="invalid-feedback text-xs" id="editEmailError">Please provide a valid email format.</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="editDob" class="form-label fw-medium text-teal-dark">Date of Birth</label>
+                                <input type="date" class="form-control py-2.5 rounded-3" id="editDob" required>
+                                <div class="invalid-feedback text-xs" id="editDobError">Date of Birth cannot be a future date.</div>
+                            </div>
+                            <div class="col-12 col-md-6 d-flex align-items-end">
+                                <div class="form-control-plaintext text-muted small py-2 d-flex align-items-center">
+                                    <i class="fa-solid fa-circle-info text-teal me-2"></i>
+                                    Age will recalculate based on date.
+                                </div>
+                            </div>
+
+                            <hr class="my-4 text-muted opacity-25">
+
+                            <!-- Blood Values -->
+                            <div class="col-12">
+                                <h6 class="fw-semibold text-teal-dark mb-2">Blood Test Values</h6>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="editGlucose" class="form-label fw-medium text-teal-dark">Glucose (mg/dL)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control py-2.5" id="editGlucose" required>
+                                    <span class="input-group-text bg-light text-muted small">mg/dL</span>
+                                </div>
+                                <div class="invalid-feedback text-xs">Enter a valid positive number for Glucose.</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="editHaemoglobin" class="form-label fw-medium text-teal-dark">Haemoglobin (g/dL)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control py-2.5" id="editHaemoglobin" required>
+                                    <span class="input-group-text bg-light text-muted small">g/dL</span>
+                                </div>
+                                <div class="invalid-feedback text-xs">Enter a valid positive number for Haemoglobin.</div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label for="editCholesterol" class="form-label fw-medium text-teal-dark">Cholesterol (mg/dL)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control py-2.5" id="editCholesterol" required>
+                                    <span class="input-group-text bg-light text-muted small">mg/dL</span>
+                                </div>
+                                <div class="invalid-feedback text-xs">Enter a valid positive number for Cholesterol.</div>
+                            </div>
+
+                            <!-- Diagnostic History / Updates Timeline -->
+                            <div class="col-12 mt-4" id="editTimelineSection">
+                                <h6 class="fw-semibold text-teal-dark mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Update History Timeline</h6>
+                                <div class="timeline-box border rounded-3 p-3 bg-light-soft max-h-48 overflow-y-auto">
+                                    <ul class="timeline-list mb-0" id="editHistoryList">
+                                        <!-- History parsed via JS -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-0 p-0 mt-4 gap-2">
+                            <button type="button" class="btn btn-outline-teal py-2.5 px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-teal py-2.5 px-4 rounded-3">Update Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-body p-4 text-center">
+                    <div class="delete-icon-box bg-red-soft text-danger mb-3 mx-auto">
+                        <i class="fa-solid fa-trash-can fs-3"></i>
+                    </div>
+                    <h5 class="fw-semibold text-teal-dark mb-2">Delete Patient Log?</h5>
+                    <p class="text-muted small">
+                        This action will permanently erase <strong id="deletePatientName" class="text-teal-dark">Sarah Jenkins</strong>'s entire medical record and diagnostic timeline from the main database. This cannot be undone.
+                    </p>
+                    <input type="hidden" id="deletePatientId">
+                    <div class="d-flex justify-content-center gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-teal py-2 px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" id="btnConfirmDelete" class="btn btn-danger py-2 px-4 rounded-3">Delete Record</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Prescription Modal -->
+    <div class="modal fade" id="prescriptionModal" tabindex="-1" aria-labelledby="prescriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow">
+                <div class="modal-header border-0 bg-teal text-white p-4">
+                    <h5 class="modal-title fw-semibold" id="prescriptionModalLabel">
+                        <i class="fa-solid fa-prescription-bottle-medical me-2"></i>Prescription Suggestions (Clinical Reference)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="remarks-box border rounded-3 p-3 bg-light-soft mb-4">
+                        <span class="text-xs text-muted text-uppercase fw-semibold d-block mb-1">AI Health prediction:</span>
+                        <p class="text-teal-dark mb-0 fw-medium" id="prescRemarksText">Checking prediction...</p>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- RxNorm Drugs -->
+                        <div class="col-12 col-md-6 border-end-md">
+                            <h6 class="fw-semibold text-teal-dark mb-3">
+                                <i class="fa-solid fa-tablets me-2 text-teal"></i>Standard Medications
+                                <span class="badge bg-teal-soft text-teal-dark text-xxs ms-1">RxNorm API</span>
+                            </h6>
+                            <ul class="drug-concept-list ps-0" id="rxnormMedicinesList">
+                                <!-- Loaded dynamically via AJAX -->
+                            </ul>
+                        </div>
+                        <!-- Lifestyle/Dietary recommendations -->
+                        <div class="col-12 col-md-6">
+                            <h6 class="fw-semibold text-teal-dark mb-3">
+                                <i class="fa-solid fa-apple-whole me-2 text-teal"></i>Lifestyle & Diet advice
+                            </h6>
+                            <p class="text-sm text-teal-dark" id="rxnormAdviceText">
+                                Loading clinical guidelines...
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Medical Disclaimer Alert -->
+                    <div class="alert alert-warning border-0 bg-amber-soft text-amber-dark d-flex align-items-start mt-4 mb-0 rounded-3" role="alert">
+                        <i class="fa-solid fa-circle-exclamation fs-5 me-2 mt-0.5"></i>
+                        <div class="small">
+                            <strong>AI Clinical Disclaimer:</strong> These suggestions are compiled using deep predictive models and standard chemical designations from the US National Library of Medicine (RxNorm). This does not constitute professional medical advice, prescription, or clinical diagnosis. Please consult a qualified practitioner before starting any therapeutic regimen.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 gap-2">
+                    <button type="button" class="btn btn-teal w-100 py-2.5 rounded-3 fw-medium" data-bs-dismiss="modal">Acknowledge Reference</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast align-items-center text-white border-0 bg-teal shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center p-2.5">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-circle-check fs-5"></i>
+                    <span id="successToastText" class="fw-medium text-sm">Diagnostic patient record logged successfully!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main JavaScript Controller -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

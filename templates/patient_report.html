@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Report | {{ patient.full_name }}</title>
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- html2pdf.js and html2canvas CDN libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            padding: 40px 20px;
+        }
+        .report-actions {
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+        }
+        /* Printable Report Container */
+        .medical-report-paper {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            padding: 50px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Decorative clinic lines */
+        .medical-report-paper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background-color: #0d9488;
+        }
+        .report-header {
+            border-bottom: 2px solid #0d9488;
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+        }
+        .clinic-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo-box {
+            width: 50px;
+            height: 50px;
+            background-color: #0d9488;
+            color: #ffffff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .clinic-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0d9488;
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+        .clinic-tagline {
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 0;
+        }
+        .report-meta-box {
+            text-align: right;
+        }
+        .report-id {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f766e;
+            background-color: #f0fdfa;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .report-date {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0d9488;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
+            margin-bottom: 15px;
+        }
+        .patient-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .info-item {
+            font-size: 14px;
+        }
+        .info-label {
+            color: #64748b;
+            font-weight: 500;
+            width: 140px;
+            display: inline-block;
+        }
+        .info-val {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        /* Results Table */
+        .results-table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-collapse: collapse;
+        }
+        .results-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px 15px;
+            border-bottom: 1.5px solid #e2e8f0;
+            text-align: left;
+        }
+        .results-table td {
+            padding: 12px 15px;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .badge-risk {
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+        .badge-high {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fee2e2;
+        }
+        .badge-moderate {
+            background-color: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fef3c7;
+        }
+        .badge-normal {
+            background-color: #f0fdfa;
+            color: #0d9488;
+            border: 1px solid #ccfbf1;
+        }
+        .value-red {
+            color: #dc2626;
+            font-weight: 700;
+        }
+        .value-green {
+            color: #0d9488;
+            font-weight: 700;
+        }
+        /* Diagnostic Analysis Box */
+        .analysis-box {
+            background-color: #f8fafc;
+            border-left: 4px solid #0d9488;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 30px;
+        }
+        .prescription-box {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .drug-tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .drug-tag {
+            background-color: #f0fdfa;
+            color: #0d9488;
+            border: 1px solid #ccfbf1;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .qr-footer-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 40px;
+            border-top: 1.5px solid #e2e8f0;
+            padding-top: 25px;
+        }
+        .qr-code-box {
+            text-align: center;
+        }
+        .qr-code-img {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px;
+        }
+        .qr-caption {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .report-disclaimer {
+            font-size: 11px;
+            color: #94a3b8;
+            max-width: 480px;
+            line-height: 1.5;
+        }
+        /* Custom Button Styling */
+        .btn-action {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-pdf {
+            background-color: #0d9488;
+            color: #ffffff;
+            border: none;
+        }
+        .btn-pdf:hover {
+            background-color: #0f766e;
+            color: #ffffff;
+        }
+        .btn-png {
+            background-color: #ffffff;
+            color: #0d9488;
+            border: 1.5px solid #0d9488;
+        }
+        .btn-png:hover {
+            background-color: #f0fdfa;
+            color: #0f766e;
+        }
+        .btn-back {
+            color: #64748b;
+            background: none;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-back:hover {
+            color: #0f172a;
+        }
+
+        /* Screen only and print specific stylesheets */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .medical-report-paper {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Actions toolbar: no-print -->
+    <div class="report-actions no-print d-flex align-items-center justify-content-between">
+        <a href="/" class="btn btn-back">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back to Portal
+        </a>
+        <div class="d-flex gap-2">
+            <button onclick="downloadPNG()" class="btn btn-action btn-png">
+                <i class="fa-solid fa-file-image me-2"></i>Download PNG
+            </button>
+            <button onclick="downloadPDF()" class="btn btn-action btn-pdf">
+                <i class="fa-solid fa-file-pdf me-2"></i>Download PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Printable Paper Sheet -->
+    <div class="medical-report-paper" id="medicalReportElement">
+        
+        <!-- Header -->
+        <header class="report-header d-flex justify-content-between align-items-center">
+            <div class="clinic-brand">
+                <div class="logo-box">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div>
+                    <h2 class="clinic-title">VitalScan</h2>
+                    <p class="clinic-tagline">Patient Health Analyzer</p>
+                </div>
+            </div>
+            <div class="report-meta-box">
+                <span class="report-id">{{ report_id }}</span>
+                <p class="report-date mb-0">Generated: {{ patient.created_at.strftime('%d %B %Y, %I:%M %p') }}</p>
+            </div>
+        </header>
+
+        <!-- Patient Demographics -->
+        <section class="mb-4">
+            <h5 class="section-title">Patient Demographics</h5>
+            <div class="patient-info-grid">
+                <div class="info-item">
+                    <span class="info-label">Full Name:</span>
+                    <span class="info-val">{{ patient.full_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email Address:</span>
+                    <span class="info-val">{{ patient.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Date of Birth:</span>
+                    <span class="info-val">{{ patient.dob }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Calculated Age:</span>
+                    <span class="info-val">{{ patient.age }} Years</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lab Blood Metrics -->
+        <section class="mb-4">
+            <h5 class="section-title">Laboratory Blood Panel</h5>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Diagnostic Metric</th>
+                        <th>Observed Value</th>
+                        <th>Standard Normal Reference</th>
+                        <th>Diagnostic Evaluation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-semibold">Blood Glucose</td>
+                        <td class="{% if patient.glucose > 140 %}value-red{% else %}value-green{% endif %}">
+                            {{ patient.glucose }} mg/dL
+                        </td>
+                        <td>70 - 140 mg/dL</td>
+                        <td class="fw-semibold {% if patient.glucose > 140 %}text-danger{% else %}text-success{% endif %}">
+                            {% if patient.glucose > 140 %}Abnormal (Elevated){% else %}Normal{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Haemoglobin</td>
+                        <td class="{% if patient.haemoglobin < 12 %}value-red{% else %}value-green{% endif %}">
+                            {{ patient.haemoglobin }} g/dL
+                        </td>
+                        <td>12 - 17.5 g/dL</td>
+                        <td class="fw-semibold {% if patient.haemoglobin < 12 %}text-danger{% else %}text-success{% endif %}">
+                            {% if patient.haemoglobin < 12 %}Abnormal (Deficient){% else %}Normal{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-semibold">Total Cholesterol</td>
+                        <td class="{% if patient.cholesterol > 200 %}value-red{% else %}value-green{% endif %}">
+                            {{ patient.cholesterol }} mg/dL
+                        </td>
+                        <td>&lt; 200 mg/dL</td>
+                        <td class="fw-semibold {% if patient.cholesterol > 200 %}text-danger{% else %}text-success{% endif %}">
+                            {% if patient.cholesterol > 200 %}Abnormal (Elevated){% else %}Normal{% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- AI Clinical Analysis -->
+        <section class="mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h5 class="fw-bold text-teal mb-0" style="font-size: 15px; text-transform: uppercase; letter-spacing: 0.8px;">
+                    <i class="fa-solid fa-microchip me-1.5"></i>AI Diagnostic Assessment
+                </h5>
+                <span class="badge-risk {% if patient.risk_level == 'High Risk' %}badge-high{% elif patient.risk_level == 'Moderate Risk' %}badge-moderate{% else %}badge-normal{% endif %}">
+                    {{ patient.risk_level }}
+                </span>
+            </div>
+            <div class="analysis-box">
+                <p class="mb-0 fw-medium text-teal-dark" style="font-style: italic; line-height: 1.6;">
+                    "{{ patient.remarks }}"
+                </p>
+            </div>
+        </section>
+
+        <!-- Suggested Medications & Lifestyle from RxNorm -->
+        <section class="mb-4" id="reportPrescriptionSection" style="display: none;">
+            <h5 class="section-title">Suggested Clinical Reference Guide</h5>
+            <div class="prescription-box">
+                <div class="row">
+                    <div class="col-12 col-md-6 border-end-md pb-3 pb-md-0">
+                        <span class="text-xs text-muted fw-semibold text-uppercase d-block mb-2">Standard Medical Formulations (RxNorm):</span>
+                        <div class="drug-tag-list" id="reportDrugTags">
+                            <!-- Loaded dynamically via js call to our local backend RxNorm api -->
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 pt-3 pt-md-0 ps-md-4">
+                        <span class="text-xs text-muted fw-semibold text-uppercase d-block mb-2">General Clinical Advice:</span>
+                        <p class="text-sm mb-0 text-teal-dark" id="reportAdviceText">
+                            Fetching clinical references...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic QR & Footer -->
+        <footer class="qr-footer-layout">
+            <div class="report-disclaimer">
+                <strong>Medical Notice & Disclaimer:</strong> This clinical brief is generated automatically by the VitalScan Predictive Analytics engine powered by Gemini 1.5 Flash and verified chemical classifications from the U.S. National Library of Medicine (RxNorm). This document does not establish a clinical physician relationship, nor should it substitute formal professional healthcare diagnostics. Consult a licensed medical practitioner for diagnostic validation and prescription therapies.
+            </div>
+            <div class="qr-code-box">
+                <img src="/patient/{{ patient.id }}/qr" alt="Patient QR Code" class="qr-code-img">
+                <p class="qr-caption mb-0">Scan to View Portal</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Trigger RxNorm medicine lookups upon loading the report
+        document.addEventListener("DOMContentLoaded", function() {
+            const condition = "{{ patient.condition }}";
+            const prescSection = document.getElementById("reportPrescriptionSection");
+            const tagsContainer = document.getElementById("reportDrugTags");
+            const adviceContainer = document.getElementById("reportAdviceText");
+
+            if (condition && condition.toLowerCase() !== "healthy") {
+                prescSection.style.display = "block";
+                
+                fetch(`/api/rxnorm/${encodeURIComponent(condition)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        tagsContainer.innerHTML = "";
+                        if (data.medicines && data.medicines.length > 0) {
+                            data.medicines.forEach(med => {
+                                const tag = document.createElement("span");
+                                tag.className = "drug-tag";
+                                tag.innerHTML = `<i class="fa-solid fa-tablets me-1.5"></i>${med.generic_name} <small class="text-muted">(CUI: ${med.rxcui})</small>`;
+                                tagsContainer.appendChild(tag);
+                            });
+                        } else {
+                            tagsContainer.innerHTML = '<span class="text-muted small">No dynamic chemical mappings.</span>';
+                        }
+                        adviceContainer.innerText = data.advice || "Maintain healthy nutrition and active exercises.";
+                    })
+                    .catch(err => {
+                        tagsContainer.innerHTML = '<span class="text-danger small">RxNorm service offline.</span>';
+                        adviceContainer.innerText = "Consult a physician for clinical recommendations.";
+                    });
+            } else {
+                // For normal patients, show healthy guides
+                prescSection.style.display = "block";
+                tagsContainer.innerHTML = '<span class="text-success small fw-semibold"><i class="fa-solid fa-circle-check me-1"></i>No clinical medications indicated.</span>';
+                adviceContainer.innerText = "All parameters lie in optimal reference scales. Carry out cardiovascular workout plans and general high-nutrient dieting.";
+            }
+        });
+
+        // Client-side PDF Exporter using html2pdf
+        function downloadPDF() {
+            const element = document.getElementById('medicalReportElement');
+            const patientName = "{{ patient.full_name }}".replace(/\s+/g, '_');
+            const opt = {
+                margin:       10,
+                filename:     `VitalScan_Report_${patientName}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Run exporter
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Client-side PNG Exporter using html2canvas
+        function downloadPNG() {
+            const element = document.getElementById('medicalReportElement');
+            const patientName = "{{ patient.full_name }}".replace(/\s+/g, '_');
+            
+            // Render to canvas
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `VitalScan_Report_${patientName}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            }).catch(err => {
+                console.error("PNG export error:", err);
+            });
+        }
+    </script>
+</body>
+</html>

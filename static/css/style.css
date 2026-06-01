@@ -1,0 +1,632 @@
+/* ==========================================================================
+   VitalScan CSS Core - Custom Premium Clinical UI Theme
+   ========================================================================== */
+
+/* Google Fonts: Poppins Included */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Color Variables Setup */
+:root {
+    --teal: #0d9488;
+    --teal-hover: #0f766e;
+    --teal-dark: #115e59;
+    --teal-soft: #f0fdfa;
+    
+    --red-soft: #fef2f2;
+    --red-dark: #991b1b;
+    --green-soft: #f0fdfa;
+    --green-dark: #115e59;
+    --blue-soft: #eff6ff;
+    --blue-dark: #1e40af;
+    --amber: #d97706;
+    --amber-soft: #fffbeb;
+    --amber-dark: #92400e;
+    
+    --bg-app: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-card: #ffffff;
+    --bg-navbar: #ffffff;
+    --bg-input: #ffffff;
+    --bg-stats-card: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] {
+    --bg-app: #0b0f19;
+    --bg-sidebar: #111827;
+    --bg-card: #1f2937;
+    --bg-navbar: #111827;
+    --bg-input: #1f2937;
+    --bg-stats-card: #111827;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --border-color: #374151;
+    
+    --teal-soft: #115e59;
+    --teal-dark: #2dd4bf;
+    
+    --red-soft: #7f1d1d;
+    --red-dark: #fca5a5;
+    --green-soft: #064e3b;
+    --green-dark: #34d399;
+    --blue-soft: #1e3a8a;
+    --blue-dark: #93c5fd;
+    --amber-soft: #78350f;
+    --amber-dark: #fcd34d;
+    
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Global Reset & Base Setup */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Container Structure */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 1. Sidebar Design */
+.sidebar {
+    width: 280px;
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 32px;
+    color: var(--teal);
+    animation: heartBeat 2s infinite ease-in-out;
+}
+
+.brand-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.brand-tagline {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin: 0;
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 24px 16px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-link:hover, .nav-link.active {
+    background-color: var(--teal-soft);
+    color: var(--teal-dark) !important;
+}
+
+.nav-icon {
+    font-size: 18px;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.medical-badge {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* 2. Main Workspace Layout */
+.main-content {
+    flex-grow: 1;
+    margin-left: 280px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.top-navbar {
+    background-color: var(--bg-navbar);
+    border-color: var(--border-color) !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Theme switch button styling */
+.theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-card);
+    color: var(--teal);
+    border-color: var(--border-color) !important;
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--teal-soft);
+}
+
+/* 3. Cards & Modules */
+.dashboard-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color) !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.bg-card-decoration {
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--teal);
+    opacity: 0.04;
+}
+
+.bg-red-dec { background-color: #dc2626; }
+.bg-green-dec { background-color: #10b981; }
+.bg-blue-dec { background-color: #3b82f6; }
+
+.bg-teal-soft { background-color: var(--teal-soft); }
+.bg-red-soft { background-color: var(--red-soft); }
+.bg-green-soft { background-color: var(--green-soft); }
+.bg-blue-soft { background-color: var(--blue-soft); }
+.bg-amber-soft { background-color: var(--amber-soft); }
+
+.text-teal { color: var(--teal) !important; }
+.text-teal-dark { color: var(--teal-dark) !important; }
+.text-amber-dark { color: var(--amber-dark) !important; }
+
+/* disease.sh Sub-cards styling */
+.bg-card-stats {
+    background-color: var(--bg-stats-card) !important;
+    border-color: var(--border-color) !important;
+    transition: all 0.3s ease;
+}
+
+/* 4. Tables Design */
+.table {
+    color: var(--text-main) !important;
+}
+
+.table th {
+    background-color: var(--bg-stats-card) !important;
+    color: var(--text-muted) !important;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-bottom: 1.5px solid var(--border-color) !important;
+}
+
+.table td {
+    border-bottom: 1px solid var(--border-color) !important;
+    font-size: 13.5px;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 3px;
+}
+
+/* Blood Indicator Colors */
+.indicator-danger {
+    color: #dc2626 !important;
+    font-weight: 700;
+    background-color: var(--red-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.indicator-normal {
+    color: #0d9488 !important;
+    font-weight: 600;
+}
+
+/* 5. Custom Buttons */
+.btn-teal {
+    background-color: var(--teal);
+    color: #ffffff;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-teal:hover {
+    background-color: var(--teal-hover);
+    color: #ffffff;
+}
+
+.btn-teal-secondary {
+    background-color: var(--bg-stats-card);
+    color: var(--teal-dark);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.btn-teal-secondary:hover {
+    background-color: var(--teal-soft);
+    color: var(--teal-hover);
+}
+
+.btn-outline-teal {
+    border: 1px solid var(--teal) !important;
+    color: var(--teal) !important;
+    background: none;
+}
+
+.btn-outline-teal:hover {
+    background-color: var(--teal-soft) !important;
+    color: var(--teal-dark) !important;
+}
+
+.btn-add-patient {
+    background-color: var(--teal);
+    color: #ffffff;
+    border: none;
+}
+
+.btn-add-patient:hover {
+    background-color: var(--teal-hover);
+    color: #ffffff;
+}
+
+/* Form Styling */
+.form-control, .input-group-text {
+    background-color: var(--bg-input);
+    border-color: var(--border-color);
+    color: var(--text-main);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    background-color: var(--bg-input);
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+    color: var(--text-main);
+}
+
+.invalid-feedback {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* Search Box Toolbar */
+.search-input-box .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.max-w-lg {
+    max-width: 480px;
+}
+
+/* 6. Timeline History Styling */
+.timeline-box {
+    border-color: var(--border-color) !important;
+    transition: all 0.3s ease;
+}
+
+.bg-light-soft {
+    background-color: var(--bg-stats-card) !important;
+}
+
+.timeline-list {
+    list-style: none;
+    padding-left: 20px;
+    position: relative;
+    border-left: 2px solid var(--border-color);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--teal);
+    border: 2px solid var(--bg-card);
+}
+
+.timeline-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.timeline-text {
+    font-size: 12.5px;
+    color: var(--text-main);
+    margin-top: 2px;
+}
+
+.max-h-48 {
+    max-h: 190px;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
+/* 7. Loading Spinner Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.7);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner-box {
+    background-color: var(--bg-card);
+    padding: 30px 50px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+/* Modals Modern Theme */
+.modal-content {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
+.modal-header {
+    background-color: var(--teal) !important;
+    border-bottom: none !important;
+}
+
+.btn-close-white {
+    filter: invert(1) grayscale(1) brightness(2);
+}
+
+/* Risk badges custom colors */
+.badge-high-risk {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+}
+
+.badge-moderate-risk {
+    background-color: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fef3c7;
+}
+
+.badge-normal-risk {
+    background-color: #f0fdfa;
+    color: #0d9488;
+    border: 1px solid #ccfbf1;
+}
+
+.custom-risk-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* 8. Animations and Tab Swapping */
+.tab-panel {
+    display: none;
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+.tab-panel.active-panel {
+    display: block !important;
+    animation: fadeInSlide 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.fade-in-slide {
+    animation: fadeInSlide 0.35s ease-out forwards;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.12); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.12); }
+    70% { transform: scale(1); }
+}
+
+.animate-pulse {
+    animation: pulseIcon 1.5s infinite alternate;
+}
+
+@keyframes pulseIcon {
+    from { opacity: 0.6; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1.05); }
+}
+
+.text-amber { color: #f59e0b !important; }
+
+/* Prescription Drug concept rows */
+.drug-concept-list {
+    margin: 0;
+}
+
+.drug-item {
+    display: flex;
+    align-items: center;
+    justify-content: justify;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: var(--teal-soft);
+    color: var(--teal-dark);
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+}
+
+.drug-itemSmall {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.delete-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-xxs {
+    font-size: 9px;
+}
+
+.border-end-md {
+    border-right: 1px solid var(--border-color);
+}
+
+/* Responsive Overrides */
+@media (max-width: 991.98px) {
+    .sidebar {
+        display: none; /* Mobile navigation could collapse, standard mobile sidebar toggling */
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .top-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+    }
+    .border-end-md {
+        border-right: none !important;
+    }
+}
+
+/* Dark Mode Helper Overrides */
+[data-theme="dark"] .text-muted {
+    color: var(--text-muted) !important;
+}
+
